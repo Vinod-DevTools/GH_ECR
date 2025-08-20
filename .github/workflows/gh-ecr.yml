@@ -62,8 +62,11 @@ jobs:
       - name: Build & Push Docker Images
         run: |
           while IFS=: read -r name tag; do
+            echo "-----"
             echo "Building and Pushing $name:$tag"
+            echo "Docker version check:"
             docker --version
+            echo "-----"
             docker build -t $name:$tag . # adjust path if needed
             docker tag $name:$tag ${{ steps.ecr.outputs.repo }}:$tag
             docker push ${{ steps.ecr.outputs.repo }}:$tag
