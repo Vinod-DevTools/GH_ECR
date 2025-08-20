@@ -1,0 +1,63 @@
+name: Terraform + Build and Push Docker Images to ECR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform-and-docker:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+      TF_WORKING_DIR: ./terraform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # Terraform Init (auto picks up S3 backend from main.tf)
+      - name: Terraform Init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform init -input=false
+
+      # Terraform Apply (create/update ECR)
+      - name: Terraform Apply
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform apply -auto-approve -input=false
+
+      # Get ECR repo URL from Terraform output
+      - name: Get ECR URL
+        id: ecr
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: |
+          echo "url=$(terraform output -raw ecr_repository_url)" >> $GITHUB_OUTPUT
+
+      # Login Docker to ECR
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | \
+          docker login --username AWS --password-stdin ${{ steps.ecr.outputs.url }}
+
+      # Build and push Docker images from images.txt
+      - name: Build & Push Docker Images
+        run: |
+          while IFS=: read -r name tag; do
+            echo "Building and Pushing $name:$tag"
+            docker build -t $name:$tag .
+            docker tag $name:$tag ${{ steps.ecr.outputs.url }}:$tag
+            docker push ${{ steps.ecr.outputs.url }}:$tag
+          done < images.txt
