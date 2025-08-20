@@ -13,6 +13,6 @@ provider "aws" {
 
 module "ecr_demo" {
   source      = "./modules/ecr"
-  name        = "GH-ECR-Demo"
+  name        = "ghdemoecr"
   environment = "dev"
 }
