@@ -59,7 +59,7 @@ jobs:
         run: |
           while IFS=: read -r name tag; do
             echo "Building and Pushing $name:$tag"
-            docker build -t $name:$tag .   # adjust path if needed
+            docker build -t $name:$tag ./Dockerfile # adjust path if needed
             docker tag $name:$tag ${{ steps.ecr.outputs.repo }}:$tag
             docker push ${{ steps.ecr.outputs.repo }}:$tag
           done < images.txt
