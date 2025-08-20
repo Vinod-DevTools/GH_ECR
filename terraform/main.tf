@@ -3,7 +3,6 @@ terraform {
     bucket         = "s3state0989"
     key            = "ecr-sync-project/terraform.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "terraform-locks"
     encrypt        = true
   }
 }
