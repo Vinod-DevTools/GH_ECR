@@ -17,7 +17,7 @@ module "ecr_demo" {
   environment = "dev"
 }
 data "external" "images" {
-  program = ["${path.module}/parse_images.py"]
+  program = ["parse_images.py"]
 }
 
 
