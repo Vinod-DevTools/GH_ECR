@@ -3,7 +3,7 @@ terraform {
     bucket         = "s3state0989"
     key            = "ecr-sync-project/terraform.tfstate"
     region         = "us-east-1"
-    encrypt        = true
+    encrypt        = true 
   }
 }
 
@@ -13,6 +13,6 @@ provider "aws" {
 
 module "ecr_demo" {
   source      = "./modules/ecr"
-  name        = "demo"
+  name        = "GH-ECR-Demo"
   environment = "dev"
 }
