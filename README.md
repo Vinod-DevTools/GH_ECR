@@ -1,1 +1,1 @@
-# GH_ECR
+# GH_ECR_Terraform
