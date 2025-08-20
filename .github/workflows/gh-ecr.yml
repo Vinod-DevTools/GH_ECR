@@ -57,12 +57,24 @@ jobs:
           aws ecr get-login-password --region $AWS_REGION | \
           docker login --username AWS --password-stdin ${{ steps.ecr.outputs.registry }}
 
-      # Build and push Docker images from images.txt
-      - name: Build & Push Docker Images
+      # Pull and retag Docker images from ECR based on images.txt
+      - name: Retag & Push Docker Images
         run: |
           while IFS=: read -r name tag; do
-            echo "Building and Pushing $name:$tag"
-            docker build -t $name:$tag . # adjust path if needed
-            docker tag $name:$tag ${{ steps.ecr.outputs.repo }}:$tag
+            echo "Processing $name:$tag"
+
+            # Example: images.txt line = app:2.0
+            # Expect previous tag available in ECR (you need to define "old tag" logic)
+            
+            # Define old tag (example: always retag from 'latest')
+            OLD_TAG=latest
+
+            # Pull existing image from ECR
+            docker pull ${{ steps.ecr.outputs.repo }}:$OLD_TAG
+
+            # Retag with new tag from images.txt
+            docker tag ${{ steps.ecr.outputs.repo }}:$OLD_TAG ${{ steps.ecr.outputs.repo }}:$tag
+
+            # Push new tag
             docker push ${{ steps.ecr.outputs.repo }}:$tag
           done < images.txt
