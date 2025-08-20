@@ -1,1 +1,2 @@
-demo:1.0.1
+demo:latest
+demogh:latest
