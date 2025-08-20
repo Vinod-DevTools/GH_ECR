@@ -1,10 +1,8 @@
-# Dockerfile
+# Use a small Python base image
 FROM python:3.11-slim
 
-WORKDIR /app
-COPY app/ /app
-COPY requirements.txt .
+# Copy the script into the root of the container
+COPY hello.py .
 
-RUN pip install --no-cache-dir -r requirements.txt
-
-CMD ["python", "app.py"]
+# Run the script
+CMD ["python", "hello.py"]
