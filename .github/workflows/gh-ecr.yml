@@ -59,15 +59,12 @@ jobs:
           docker login --username AWS --password-stdin ${{ steps.ecr.outputs.registry }}
 
       # Build and push Docker images from images.txt
-      - name: Build & Push Docker Images
+      - name: Build & Push Docker Image
         run: |
-          while IFS=: read -r name tag; do
-            echo "-----"
-            echo "Building and Pushing $name:$tag"
-            echo "Docker version check:"
-            docker --version
-            echo "-----"
-            docker build -t $name:$tag . # adjust path if needed
-            docker tag $name:$tag ${{ steps.ecr.outputs.repo }}:$tag
-            docker push ${{ steps.ecr.outputs.repo }}:$tag
-          done < images.txt
+          IMAGE_NAME=$(echo "${{ matrix.image }}" | cut -d: -f1)
+          IMAGE_TAG=$(echo "${{ matrix.image }}" | cut -d: -f2)
+
+          echo "Building and Pushing $IMAGE_NAME:$IMAGE_TAG"
+          docker build -t $IMAGE_NAME:$IMAGE_TAG .
+          docker tag $IMAGE_NAME:$IMAGE_TAG ${{ steps.ecr.outputs.registry }}/ghdemoecr:$IMAGE_TAG
+          docker push ${{ steps.ecr.outputs.registry }}/ghdemoecr:$IMAGE_TAG
