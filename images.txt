@@ -1,2 +1,2 @@
-demo:new
-demogh:latest
+demo:new02
+demogh:new01

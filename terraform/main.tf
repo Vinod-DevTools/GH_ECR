@@ -13,7 +13,7 @@ provider "aws" {
 
 module "ecr_demo" {
   source      = "./modules/ecr"
-  name        = "ghdemoecr01"
+  name        = "ghdemoecr"
   environment = "dev"
 }
 data "external" "images" {
