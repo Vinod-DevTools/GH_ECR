@@ -16,9 +16,7 @@ module "ecr_demo" {
   name        = "ghdemoecr"
   environment = "dev"
 }
-data "external" "images" {
-  program = ["python3", "${path.module}/parse_images.py"]
-}
+
 
 
 

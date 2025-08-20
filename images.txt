@@ -1,2 +1,2 @@
-demo:new03
-demogh:new04
+devops-ecs-app:latest
+docker-action:latest

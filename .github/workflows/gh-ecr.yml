@@ -17,7 +17,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Configure AWS credentials
       - name: Configure AWS credentials 
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -25,24 +24,21 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # Terraform Init
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init -reconfigure
-      - name: Terraform plan
+
+      - name: Terraform Plan
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform plan 
 
-      # Terraform Apply
       - name: Terraform Apply
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform apply -auto-approve -input=false
 
-      # Get ECR repo URL from Terraform output
       - name: Get ECR URL
         id: ecr
         working-directory: ${{ env.TF_WORKING_DIR }}
@@ -51,30 +47,26 @@ jobs:
           echo "repo=$REPO_URL" >> $GITHUB_OUTPUT
           echo "registry=$(echo $REPO_URL | cut -d'/' -f1)" >> $GITHUB_OUTPUT
 
-      # Login Docker to ECR
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region $AWS_REGION | \
           docker login --username AWS --password-stdin ${{ steps.ecr.outputs.registry }}
 
-      # Retag and Push Docker images based on images.txt
-      - name: Retag & Push Docker Images
+     
+      - name: Pull and Push Docker Images
         run: |
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          REPO=${{ steps.ecr.outputs.repo }}
-
-          while IFS=: read -r name new_tag; do
-            echo "Processing $name:$new_tag"
-
-            # --- OPTION 1: Get latest tag dynamically from ECR ---
-            old_tag=$(aws ecr describe-images \
-                        --repository-name "$(basename $REPO)" \
-                        --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' \
-                        --output text)
-
-            echo "Retagging $name from $old_tag → $new_tag"
-
-            docker pull "$REPO:$old_tag"
-            docker tag "$REPO:$old_tag" "$REPO:$new_tag"
-            docker push "$REPO:$new_tag"
+          while IFS= read -r line; do
+            image=$line
+            name=$(echo "$line" | cut -d':' -f1 | tr '/:' '-')
+            tag=$(echo "$line" | cut -d':' -f2)
+            ecr_repo="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/${name}"
+            
+            echo "Pulling $image"
+            docker pull $image
+            
+            echo "Tagging as $ecr_repo:$tag"
+            docker tag $image "$ecr_repo:$tag"
+            
+            echo "Pushing $ecr_repo:$tag"
+            docker push "$ecr_repo:$tag"
           done < images.txt
