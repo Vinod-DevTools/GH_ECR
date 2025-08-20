@@ -1,2 +1,3 @@
 vinodm2001/devops-ecs-app:latest
 vinodm2001/docker-action:latest
+antrea/nginx:1.21.6-alpine
