@@ -57,24 +57,24 @@ jobs:
           aws ecr get-login-password --region $AWS_REGION | \
           docker login --username AWS --password-stdin ${{ steps.ecr.outputs.registry }}
 
-      # Pull and retag Docker images from ECR based on images.txt
+      # Retag and Push Docker images based on images.txt
       - name: Retag & Push Docker Images
         run: |
-          while IFS=: read -r name tag; do
-            echo "Processing $name:$tag"
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          REPO=${{ steps.ecr.outputs.repo }}
 
-            # Example: images.txt line = app:2.0
-            # Expect previous tag available in ECR (you need to define "old tag" logic)
-            
-            # Define old tag (example: always retag from 'latest')
-            OLD_TAG=latest
+          while IFS=: read -r name new_tag; do
+            echo "Processing $name:$new_tag"
 
-            # Pull existing image from ECR
-            docker pull ${{ steps.ecr.outputs.repo }}:$OLD_TAG
+            # --- OPTION 1: Get latest tag dynamically from ECR ---
+            old_tag=$(aws ecr describe-images \
+                        --repository-name "$(basename $REPO)" \
+                        --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' \
+                        --output text)
 
-            # Retag with new tag from images.txt
-            docker tag ${{ steps.ecr.outputs.repo }}:$OLD_TAG ${{ steps.ecr.outputs.repo }}:$tag
+            echo "Retagging $name from $old_tag → $new_tag"
 
-            # Push new tag
-            docker push ${{ steps.ecr.outputs.repo }}:$tag
+            docker pull "$REPO:$old_tag"
+            docker tag "$REPO:$old_tag" "$REPO:$new_tag"
+            docker push "$REPO:$new_tag"
           done < images.txt
