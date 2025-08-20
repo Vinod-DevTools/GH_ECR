@@ -29,12 +29,12 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # Terraform Init (auto picks up S3 backend from main.tf)
+      # Terraform Init
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init -input=false
 
-      # Terraform Apply (create/update ECR)
+      # Terraform Apply
       - name: Terraform Apply
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform apply -auto-approve -input=false
@@ -44,21 +44,22 @@ jobs:
         id: ecr
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
-          # Updated to match your Terraform output name
-          echo "url=$(terraform output -raw demo_repo_url)" >> $GITHUB_OUTPUT
+          REPO_URL=$(terraform output -raw demo_repo_url)
+          echo "repo=$REPO_URL" >> $GITHUB_OUTPUT
+          echo "registry=$(echo $REPO_URL | cut -d'/' -f1)" >> $GITHUB_OUTPUT
 
       # Login Docker to ECR
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region $AWS_REGION | \
-          docker login --username AWS --password-stdin ${{ steps.ecr.outputs.url }}
+          docker login --username AWS --password-stdin ${{ steps.ecr.outputs.registry }}
 
       # Build and push Docker images from images.txt
       - name: Build & Push Docker Images
         run: |
           while IFS=: read -r name tag; do
             echo "Building and Pushing $name:$tag"
-            docker build -t $name:$tag .
-            docker tag $name:$tag ${{ steps.ecr.outputs.url }}:$tag
-            docker push ${{ steps.ecr.outputs.url }}:$tag
+            docker build -t $name:$tag .   # adjust path if needed
+            docker tag $name:$tag ${{ steps.ecr.outputs.repo }}:$tag
+            docker push ${{ steps.ecr.outputs.repo }}:$tag
           done < images.txt
