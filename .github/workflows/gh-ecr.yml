@@ -48,6 +48,10 @@ jobs:
           echo "repo=$REPO_URL" >> $GITHUB_OUTPUT
           echo "registry=$(echo $REPO_URL | cut -d'/' -f1)" >> $GITHUB_OUTPUT
 
+      # ✅ Set up Docker (adds docker/buildx, ensures docker CLI works)
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
       # Login Docker to ECR
       - name: Login to Amazon ECR
         run: |
