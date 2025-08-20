@@ -44,7 +44,8 @@ jobs:
         id: ecr
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: |
-          echo "url=$(terraform output -raw ecr_repository_url)" >> $GITHUB_OUTPUT
+          # Updated to match your Terraform output name
+          echo "url=$(terraform output -raw demo_repo_url)" >> $GITHUB_OUTPUT
 
       # Login Docker to ECR
       - name: Login to Amazon ECR
