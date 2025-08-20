@@ -48,10 +48,6 @@ jobs:
           echo "repo=$REPO_URL" >> $GITHUB_OUTPUT
           echo "registry=$(echo $REPO_URL | cut -d'/' -f1)" >> $GITHUB_OUTPUT
 
-      # ✅ Set up Docker (adds docker/buildx, ensures docker CLI works)
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
-
       # Login Docker to ECR
       - name: Login to Amazon ECR
         run: |
@@ -59,12 +55,11 @@ jobs:
           docker login --username AWS --password-stdin ${{ steps.ecr.outputs.registry }}
 
       # Build and push Docker images from images.txt
-      - name: Build & Push Docker Image
+      - name: Build & Push Docker Images
         run: |
-          IMAGE_NAME=$(echo "${{ matrix.image }}" | cut -d: -f1)
-          IMAGE_TAG=$(echo "${{ matrix.image }}" | cut -d: -f2)
-
-          echo "Building and Pushing $IMAGE_NAME:$IMAGE_TAG"
-          docker build -t $IMAGE_NAME:$IMAGE_TAG .
-          docker tag $IMAGE_NAME:$IMAGE_TAG ${{ steps.ecr.outputs.registry }}/ghdemoecr:$IMAGE_TAG
-          docker push ${{ steps.ecr.outputs.registry }}/ghdemoecr:$IMAGE_TAG
+          while IFS=: read -r name tag; do
+            echo "Building and Pushing $name:$tag"
+            docker build -t $name . # adjust path if needed
+            docker tag $name:$tag ${{ steps.ecr.outputs.repo }}:$tag
+            docker push ${{ steps.ecr.outputs.repo }}/$name:$tag
+          done < images.txt
