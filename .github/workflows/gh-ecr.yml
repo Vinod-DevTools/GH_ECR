@@ -32,7 +32,10 @@ jobs:
       # Terraform Init
       - name: Terraform Init
         working-directory: ${{ env.TF_WORKING_DIR }}
-        run: terraform init -input=false
+        run: terraform init -reconfigure
+      - name: Terraform plan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        run: terraform plan 
 
       # Terraform Apply
       - name: Terraform Apply

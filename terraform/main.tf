@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket         = "s3state0989"
+    bucket         = "ghecr0990"
     key            = "ecr-sync-project/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true 
@@ -16,3 +16,10 @@ module "ecr_demo" {
   name        = "ghdemoecr"
   environment = "dev"
 }
+data "external" "images" {
+  program = ["${path.module}/parse_images.py"]
+}
+
+
+
+
