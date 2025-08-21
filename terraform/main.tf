@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket         = "ghecr0990"
+    bucket         = "ghecrstatefile0990"
     key            = "ecr-sync-project/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true 

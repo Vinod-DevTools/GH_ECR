@@ -1,4 +1,4 @@
-name: Terraform + Pull and Push Docker Images to ECR
+name: Pull and Push Docker Images to ECR 
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Terraform Init
+      - name: Terraform Init -reconfigure
         working-directory: ${{ env.TF_WORKING_DIR }}
         run: terraform init -reconfigure
 
@@ -56,17 +56,8 @@ jobs:
         run: |
           while IFS=: read -r image tag; do
             echo "Processing $image:$tag"
-
-            
             ecr_repo="${{ steps.ecr.outputs.repo }}"
-
-            
             docker pull "$image:$tag"
-
-            
             docker tag "$image:$tag" "$ecr_repo:$tag"
-
-            
             docker push "$ecr_repo:$tag"
-
           done < images.txt
