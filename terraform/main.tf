@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket         = "ghecrstatefile0990"
+    bucket         = "demo909092001"
     key            = "ecr-sync-project/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true 
@@ -13,7 +13,7 @@ provider "aws" {
 
 module "ecr_demo" {
   source      = "./modules/ecr"
-  name        = "ghdemoecr"
+  name        = "non-prod-nets"
   environment = "dev"
 }
 
