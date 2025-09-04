@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket         = "demo909092001"
+    bucket         = "aws908999"
     key            = "ecr-sync-project/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true 
