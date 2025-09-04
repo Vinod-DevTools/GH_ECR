@@ -2,5 +2,4 @@ vinodm2001/devops-ecs-app:latest
 antrea/nginx:1.21.6-alpine
 ubuntu/nginx:edge
 ubuntu/nginx:1.18-20.04_beta
-ubuntu/nginx:1.18-21.04_beta
-docker/labs-k8s-toolkit-extension:0.0.46
+
