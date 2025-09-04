@@ -13,7 +13,7 @@ provider "aws" {
 
 module "ecr_demo" {
   source      = "./modules/ecr"
-  name        = "non-prod-NETS"
+  name        = "uat-prod-NETS"
   environment = "dev"
 }
 
