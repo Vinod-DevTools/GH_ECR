@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: us-east-1
+      AWS_REGION: eu-north-1
       TF_WORKING_DIR: ./terraform
 
     steps:
